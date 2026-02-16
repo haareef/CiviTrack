@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome - CiviTrack 360{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-850 to-black flex items-center justify-center relative overflow-hidden">
+    <!-- Background decorative circles -->
+    <div class="absolute top-1/4 -left-20 w-64 h-64 rounded-full" style="background: rgba(232, 131, 74, 0.08);"></div>
+    <div class="absolute bottom-1/4 -right-24 w-80 h-80 rounded-full" style="background: rgba(232, 131, 74, 0.06);"></div>
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-52 h-52 rounded-full" style="background: rgba(232, 131, 74, 0.04);"></div>
+    
+    <div class="relative z-10 text-center">
+        <!-- Welcome Text -->
+        <div class="px-6">
+            <h1 class="text-3xl font-bold text-white mb-2 leading-tight">Welcome To</h1>
+            <h2 class="text-5xl font-bold mb-3" style="color: #e8834a;">CiviTrack <span class="text-white">360</span></h2>
+            <p class="text-sm text-gray-500 tracking-widest">SITE MANAGEMENT SYSTEM</p>
+        </div>
+    </div>
+    
+    <!-- Next Button -->
+    <a href="{% url 'project_list' %}" class="absolute bottom-12 right-8 z-10 w-16 h-16 rounded-full flex items-center justify-center cursor-pointer" style="background: linear-gradient(135deg, #e8834a, #d4612a); box-shadow: 0 4px 20px rgba(232, 131, 74, 0.5);">
+        <svg width="32" height="32" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+    </a>
+</div>
+{% endblock %}

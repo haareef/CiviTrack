@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+/staticfiles
+/media
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDEs
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Mac
+*.DS_Store
+
+# Node
+node_modules/
+
+# Ignore Python bytecode
+*.pyc
+
+# Migrations are committed intentionally; do not ignore migrations/
+# If you want to ignore generated files, add them here.

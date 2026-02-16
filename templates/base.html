@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CiviTrack 360 - Site Management System{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary: #e8834a;
+            --primary-dark: #d4612a;
+            --dark-bg: #1a1a2e;
+            --dark-secondary: #16162a;
+            --dark-tertiary: #22223a;
+            --border-color: #2e2e50;
+        }
+        
+        * {
+            font-family: 'Segoe UI', sans-serif;
+        }
+        
+        body {
+            background: var(--dark-bg);
+            color: #fff;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 20px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 48px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(232, 131, 74, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #2e2e50;
+            color: #e8834a;
+            border: 1px solid #3a3a5a;
+            border-radius: 8px;
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-secondary:hover {
+            background: #3a3a5a;
+        }
+        
+        .btn-danger {
+            background: rgba(255, 85, 85, 0.15);
+            color: #ff5555;
+            border: 1px solid #ff5555;
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-danger:hover {
+            background: #ff5555;
+            color: white;
+        }
+        
+        .card {
+            background: var(--dark-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px;
+            transition: background 0.2s;
+        }
+        
+        .card:hover {
+            background: #2a2a4a;
+        }
+        
+        .input-field {
+            background: #fff;
+            color: #222;
+            border: 1px solid #3a3a5a;
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+            outline: none;
+            height: 48px;
+            line-height: 20px;
+            vertical-align: middle;
+        }
+        
+        .input-field:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(232, 131, 74, 0.1);
+        }
+        
+        /* Icon and button alignment in input fields */
+        .relative svg {
+            display: block;
+        }
+        
+        .relative button {
+            padding: 0;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .relative svg, .relative button svg {
+            flex-shrink: 0;
+        }
+        
+        .label-text {
+            font-size: 13px;
+            color: #ccc;
+            margin-bottom: 6px;
+            font-weight: 600;
+            display: block;
+            line-height: 1.4;
+        }
+        
+        .mb-4 small, .mb-6 small {
+            line-height: 1.4;
+            letter-spacing: 0;
+        }
+        
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 18px;
+            background: var(--dark-secondary);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .topbar-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+        
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            transition: all 0.2s;
+        }
+        
+        .icon-btn:hover {
+            color: #fff;
+        }
+        
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .alert-success {
+            background: rgba(76, 175, 80, 0.15);
+            color: #4caf50;
+            border: 1px solid #4caf50;
+        }
+        
+        .alert-error {
+            background: rgba(255, 85, 85, 0.15);
+            color: #ff5555;
+            border: 1px solid #ff5555;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--dark-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 28px 22px;
+            max-width: 360px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .table th {
+            background: linear-gradient(135deg, #e8834a, #d4612a);
+            color: white;
+            font-size: 13px;
+            padding: 16px;
+            text-align: left;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            border: none;
+        }
+        
+        .table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #e5e5e5;
+            font-size: 14px;
+            color: #333;
+            background: white;
+        }
+        
+        .table tr:hover {
+            background: #f9f9f9;
+        }
+        
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .table tbody tr:nth-child(even) {
+            background: #fafafa;
+        }
+        
+        .table tbody tr:nth-child(even):hover {
+            background: #f0f0f0;
+        }
+        
+        .amount-box {
+            background: var(--dark-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px 14px;
+            text-align: center;
+        }
+        
+        .amount-box-label {
+            font-size: 11px;
+            color: #aaa;
+            margin-bottom: 2px;
+        }
+        
+        .amount-box-value {
+            font-size: 17px;
+            font-weight: 700;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-900">
+    {% if messages %}
+        <div class="fixed top-0 left-0 right-0 z-50 p-4">
+            {% for message in messages %}
+                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-success{% endif %} max-w-2xl mx-auto mb-3">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% block content %}
+    <!-- Content goes here -->
+    {% endblock %}
+
+    <script>
+        // Close alerts after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => alert.remove(), 300);
+                }, 5000);
+            });
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

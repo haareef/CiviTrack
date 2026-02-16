@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Projects - CiviTrack 360{% endblock %}
+
+{% block content %}
+<div class="min-h-screen">
+    <!-- Top Bar -->
+    <div class="topbar">
+        <h1 class="topbar-title">Projects</h1>
+        <div class="flex gap-4">
+            <a href="{% url 'project_list' %}" class="icon-btn" title="Home">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+            </a>
+            <form method="POST" action="{% url 'logout' %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="icon-btn" title="Logout">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Content -->
+    <div class="p-4">
+        <!-- New Project Button -->
+        <a href="{% url 'new_project' %}" class="btn-primary w-full flex items-center justify-center gap-2 mb-5">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            New Project
+        </a>
+        
+        <!-- Projects List -->
+        {% if projects %}
+            {% for project in projects %}
+                <a href="{% url 'project_details' project.id %}" class="card mb-3 hover:opacity-90 transition-all cursor-pointer">
+                    <!-- Top Row: white header with dark project name -->
+                    <div style="background: white; padding: 12px; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                        <h3 class="text-lg font-bold" style="color: #1a1a2e; margin: 0;">{{ project.name }}</h3>
+                        <div class="flex items-center gap-2">
+                            <span class="px-3 py-1 rounded-full text-sm font-bold" style="background: linear-gradient(135deg, #e8834a, #d4612a); color: white;">#{{ forloop.counter }}</span>
+                            <form method="POST" action="{% url 'delete_project' project.id %}" style="display: inline;" onclick="return confirm('Delete this project?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-danger" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;">
+                                    ❌
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Dates (only start date shown) -->
+                    <div class="flex gap-3">
+                        <div style="flex: 1; background: #1a1a30; border-radius: 8px; padding: 8px 10px;">
+                            <div style="font-size: 10px; color: #888; font-weight: 600; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px;">📅 Start Date</div>
+                            <div style="font-size: 13px; color: #4caf50; font-weight: 600;">{{ project.start_date|date:'d/m/Y' }}</div>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        {% else %}
+            <div style="text-align: center; color: #666; margin-top: 60px; font-size: 15px;">
+                <div style="font-size: 40px; margin-bottom: 10px;">📁</div>
+                <div>No projects yet.</div>
+                <div>Press <span style="color: #e8834a; font-weight: 600;">+ New Project</span></div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

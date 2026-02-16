@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}Branch History - CiviTrack 360{% endblock %}
+
+{% block content %}
+<div class="min-h-screen" style="background: #f5f5f5;">
+    <!-- Top Bar -->
+    <div class="topbar">
+        <div class="flex items-center gap-2">
+            <a href="{% url 'project_details' branch.project.id %}" class="icon-btn" title="Back">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                </svg>
+            </a>
+            <h1 class="topbar-title">Branch History</h1>
+        </div>
+        <div class="flex gap-4">
+            <a href="{% url 'project_list' %}" class="icon-btn" title="Home">
+                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+            </a>
+            <form method="POST" action="{% url 'logout' %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="icon-btn" title="Logout">
+                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Content -->
+    <div class="p-6 max-w-4xl mx-auto">
+        <!-- Main Card -->
+        <div style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);">
+            <!-- Branch Name Section -->
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #e5e5e5;">
+                <h2 class="text-2xl font-bold" style="color: #e8834a;">{{ branch.name }}</h2>
+                <form method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_name">
+                    <button type="button" class="btn-secondary" onclick="editBranchName()" style="font-size: 12px; padding: 6px 12px; background: #f0f0f0; color: #666;">✎ Edit</button>
+                </form>
+            </div>
+            
+            <!-- Add Sub-Branch Form -->
+            <div style="background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 10px; padding: 20px; margin-bottom: 28px;">
+                <h3 style="font-size: 14px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Add New Expense Entry</h3>
+                <form method="POST" id="subbranch-form" class="space-y-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add">
+                    
+                    <div class="mb-4">
+                        <label class="label-text" style="color: #666;">Entry Name</label>
+                        {{ form.name }}
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <div class="flex-1">
+                            <label class="label-text" style="color: #666;">Amount</label>
+                            {{ form.amount }}
+                        </div>
+                        <div class="flex-1">
+                            <label class="label-text" style="color: #666;">Date</label>
+                            {{ form.date }}
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary w-full" style="margin-top: 12px;">ADD ENTRY</button>
+                </form>
+            </div>
+            
+            <!-- Expenses Table -->
+            <div style="margin-bottom: 24px;">
+                <h3 style="font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Expense Entries</h3>
+                <div style="overflow-x: auto;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th style="width: 30%;">Name</th>
+                                <th style="width: 20%;">Amount</th>
+                                <th style="width: 25%;">Date</th>
+                                <th style="width: 25%;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if subbranches %}
+                                {% for sb in subbranches %}
+                                    <tr>
+                                        <td style="font-weight: 600; color: #1a1a2e;">{{ sb.name }}</td>
+                                        <td style="font-weight: 600; color: #e8834a;">₹{{ sb.amount|floatformat:0 }}</td>
+                                        <td style="color: #666;">{{ sb.date|date:'d/m/Y' }}</td>
+                                        <td>
+                                            <div style="display: flex; gap: 8px;">
+                                                <a href="{% url 'edit_subbranch' sb.id %}" class="btn-secondary" style="font-size: 12px; padding: 6px 12px; text-decoration: none; display: inline-block;">✎ Edit</a>
+                                                <form method="POST" action="{% url 'delete_subbranch' sb.id %}" style="display: inline;" onclick="return confirm('Delete this entry?');">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn-danger" style="font-size: 12px; padding: 6px 12px;">🗑️ Delete</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: #999; padding: 40px;">No entries yet</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Total Section -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding: 16px; background: linear-gradient(135deg, #e8834a, #d4612a); border-radius: 8px; color: white;">
+                <span style="font-size: 15px; font-weight: 700;">Total Spent</span>
+                <span style="font-size: 22px; font-weight: 800;">₹{{ branch.total_spent|floatformat:0 }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function editBranchName() {
+    const newName = prompt('Enter new branch name:', '{{ branch.name }}');
+    if (newName && newName !== '{{ branch.name }}') {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.innerHTML = `
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update_name">
+            <input type="hidden" name="name" value="${newName}">
+        `;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Set today's date as default for all date inputs
+window.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    dateInputs.forEach(input => {
+        if (!input.value) {
+            input.value = today;
+        }
+    });
+});
+</script>
+{% endblock %}
