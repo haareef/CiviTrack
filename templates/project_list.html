@@ -41,29 +41,109 @@
         <!-- Projects List -->
         {% if projects %}
             {% for project in projects %}
-                <a href="{% url 'project_details' project.id %}" class="card mb-3 hover:opacity-90 transition-all cursor-pointer">
-                    <!-- Top Row: white header with dark project name -->
-                    <div style="background: white; padding: 12px; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
-                        <h3 class="text-lg font-bold" style="color: #1a1a2e; margin: 0;">{{ project.name }}</h3>
-                        <div class="flex items-center gap-2">
-                            <span class="px-3 py-1 rounded-full text-sm font-bold" style="background: linear-gradient(135deg, #e8834a, #d4612a); color: white;">#{{ forloop.counter }}</span>
-                            <form method="POST" action="{% url 'delete_project' project.id %}" style="display: inline;" onclick="return confirm('Delete this project?');">
-                                {% csrf_token %}
-                                <button type="submit" class="btn-danger" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;">
-                                    ❌
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+                <div class="card mb-4 hover:opacity-90 transition-all"
+     style="
+        background: #1a1f35;
+        border: 2px solid #2d3a54;
+        padding: 16px;
+        border-radius: 10px;
 
-                    <!-- Dates (only start date shown) -->
-                    <div class="flex gap-3">
-                        <div style="flex: 1; background: #1a1a30; border-radius: 8px; padding: 8px 10px;">
-                            <div style="font-size: 10px; color: #888; font-weight: 600; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px;">📅 Start Date</div>
-                            <div style="font-size: 13px; color: #4caf50; font-weight: 600;">{{ project.start_date|date:'d/m/Y' }}</div>
-                        </div>
-                    </div>
-                </a>
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+">
+
+    <!-- Clickable Area -->
+    <a href="{% url 'project_details' project.id %}" 
+       style="
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            text-decoration: none;
+            flex: 1;
+       ">
+
+       <!-- Counter -->
+        <span style="
+            background: linear-gradient(135deg, #e8834a, #d4612a);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 12px;
+        ">
+            #{{ forloop.counter }}
+        </span>
+
+        <!-- Project Name -->
+        <div style="flex: 1; text-align: left;">
+            <h3 style="color: white; margin: 0; font-size: 18px; font-weight: bold;">
+                {{ project.name }}
+            </h3>
+        </div>
+
+    </a>
+
+    <!-- Right Controls -->
+    <div style="display: flex; align-items: center; gap: 10px;">
+
+        <!-- Start Date -->
+        <div style="min-width: 120px; text-align: center;">
+            <div style="font-size: 9px; color: #999; font-weight: 600; text-transform: uppercase; margin-bottom: 6px;">
+                📅 START DATE
+            </div>
+            <div style="font-size: 14px; color: #4caf50; font-weight: 700;">
+                {{ project.start_date|date:'d/m/Y' }}
+            </div>
+        </div>
+
+        <!-- Download PDF -->
+        <a href="{% url 'export_project_pdf' project.id %}" 
+           style="
+                padding: 8px 14px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                background: #2196F3;
+                color: white;
+                border-radius: 6px;
+                text-decoration: none;
+                font-size: 12px;
+                font-weight: 600;
+                white-space: nowrap;
+           "
+           title="Download PDF">
+            DOWNLOAD PDF
+        </a>
+
+        <!-- Delete -->
+        <form method="POST" 
+              action="{% url 'delete_project' project.id %}" 
+              style="display: inline;"
+              onsubmit="return confirm('Delete this project?');">
+            {% csrf_token %}
+            <button
+                type="submit"
+                style="
+                    padding: 8px 14px;
+                    background: #f44336;
+                    color: white;
+                    border-radius: 6px;
+                    border: none;
+                    font-size: 14px;
+                    cursor: pointer;
+                    font-weight: 600;
+                "
+                >
+                ✕
+            </button>
+        </form>
+
+    </div>
+
+</div>
+
             {% endfor %}
         {% else %}
             <div style="text-align: center; color: #666; margin-top: 60px; font-size: 15px;">

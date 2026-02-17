@@ -16,6 +16,7 @@ urlpatterns = [
     path('projects/<int:project_id>/', views.project_details, name='project_details'),
     path('projects/<int:project_id>/delete/', views.delete_project, name='delete_project'),
     path('projects/<int:project_id>/history/', views.released_history, name='released_history'),
+    path('projects/<int:project_id>/export-pdf/', views.export_project_pdf, name='export_project_pdf'),
     
     # Branches
     path('projects/<int:project_id>/branches/new/', views.new_branch, name='new_branch'),

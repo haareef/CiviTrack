@@ -3,8 +3,14 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST
+from datetime import datetime
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
+from reportlab.lib import colors
 from .models import Project, Branch, SubBranch, ReleasedHistory
 from .forms import (UserRegisterForm, UserLoginForm, ProjectForm, 
                     BranchForm, SubBranchForm, ReleasedHistoryForm)
@@ -327,7 +333,7 @@ def delete_released_history(request, history_id):
 
 
 # ═══════════════════════════════════════════════════════════
-# PAGE 9 — RELEASED HISTORY
+# RELEASED HISTORY
 # ═══════════════════════════════════════════════════════════
 @login_required
 def released_history(request, project_id):
@@ -339,6 +345,155 @@ def released_history(request, project_id):
         'history': history,
     }
     return render(request, 'released_history.html', context)
+
+
+# ═══════════════════════════════════════════════════════════
+# EXPORT PROJECT TO PDF
+# ═══════════════════════════════════════════════════════════
+@login_required
+def export_project_pdf(request, project_id):
+    project = get_object_or_404(Project, id=project_id, user=request.user)
+    
+    # Create PDF response
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="CiviTrack_{project.name}_{datetime.now().strftime("%Y%m%d")}.pdf"'
+    
+    # Create PDF document
+    doc = SimpleDocTemplate(response, pagesize=A4)
+    story = []
+    styles = getSampleStyleSheet()
+    
+    # Custom styles
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=18,
+        textColor=colors.HexColor('#1E40AF'),
+        spaceAfter=12,
+        fontName='Helvetica-Bold'
+    )
+    
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=12,
+        textColor=colors.HexColor('#1E3A8A'),
+        spaceAfter=8,
+        spaceBefore=8,
+        fontName='Helvetica-Bold'
+    )
+    
+    # Project Header
+    story.append(Paragraph(f"CiviTrack - {project.name}", title_style))
+    story.append(Spacer(1, 0.2 * inch))
+    
+    # Summary Section
+    story.append(Paragraph("Project Summary", heading_style))
+    
+    total_spent = sum(b.total_spent for b in project.branches.all())
+    remaining = project.amount - project.total_released
+    
+    summary_data = [
+        ['Total Budget', f"Rs. {project.amount:,.2f}"],
+        ['Total Released', f"Rs. {project.total_released:,.2f}"],
+        ['Total Spent', f"Rs. {total_spent:,.2f}"],
+        ['Remaining Balance', f"Rs. {remaining:,.2f}"],
+        ['Start Date', str(project.start_date)],
+    ]
+    
+    summary_table = Table(summary_data, colWidths=[3*inch, 1.5*inch])
+    summary_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#E0E7FF')),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+    ]))
+    
+    story.append(summary_table)
+    story.append(Spacer(1, 0.3 * inch))
+    
+    # Branches & Expenses Section
+    story.append(Paragraph("Branches & Expenses", heading_style))
+    
+    branches = project.branches.all()
+    if branches:
+        for branch in branches:
+            story.append(Paragraph(f"<b>{branch.name}</b> | Total Spent: Rs. {branch.total_spent:,.2f}", styles['Normal']))
+            
+            # Sub-branches table
+            subbranches_data = [['Expense Name', 'Amount', 'Date']]
+            for subbranch in branch.subbranches.all():
+                subbranches_data.append([
+                    subbranch.name,
+                    f"Rs. {subbranch.amount:,.2f}",
+                    str(subbranch.date)
+                ])
+            
+            if len(subbranches_data) > 1:
+                sb_table = Table(subbranches_data, colWidths=[2.5*inch, 1.2*inch, 1.3*inch])
+                sb_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#DDD6FE')),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+                    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                    ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+                    ('ALIGN', (2, 0), (2, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, -1), 9),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                    ('TOPPADDING', (0, 0), (-1, -1), 6),
+                    ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+                    ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F8FAFC')]),
+                ]))
+                story.append(sb_table)
+            else:
+                story.append(Paragraph("<i>No expenses recorded</i>", styles['Normal']))
+            
+            story.append(Spacer(1, 0.15 * inch))
+        
+        story.append(Spacer(1, 0.2 * inch))
+    
+    # Released History Section
+    story.append(Paragraph("Fund Release History", heading_style))
+    
+    released = project.released_history.all()
+    if released:
+        release_data = [['Amount', 'Date']]
+        for release in released:
+            release_data.append([
+                f"Rs. {release.amount:,.2f}",
+                str(release.date)
+            ])
+        
+        release_table = Table(release_data, colWidths=[1.5*inch, 1.5*inch])
+        release_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#D1FAE5')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F0FDF4')]),
+        ]))
+        story.append(release_table)
+    else:
+        story.append(Paragraph("<i>No fund releases recorded</i>", styles['Normal']))
+    
+    story.append(Spacer(1, 0.3 * inch))
+    
+    # Footer
+    footer_text = f"<i>Export Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | Exported by: {request.user.email}</i>"
+    story.append(Paragraph(footer_text, styles['Normal']))
+    
+    # Build PDF
+    doc.build(story)
+    return response
 
 
 # ═══════════════════════════════════════════════════════════
