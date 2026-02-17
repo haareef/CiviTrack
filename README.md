@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # CiviTrack 360 - Site Management System
 
 A comprehensive Django-based site management system for tracking projects, branches, expenses, and fund releases.
@@ -190,3 +191,6 @@ This project is open source and available for educational purposes.
 ---
 
 **Developed by**: Haareef M A
+=======
+# CiviTrack
+>>>>>>> b4385c522fb00dee1d1e01fbe67ea5c223ec556f
